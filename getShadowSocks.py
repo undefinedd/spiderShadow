@@ -71,6 +71,7 @@ class ShadowSocks(object):
                 if not login_session:
                     return
                 self.createShadow(login_session);
+                success('获取成功,现在你可以依据以上信息配置,或利用img.png 二维码自动化配置')
             
 
 
@@ -214,6 +215,7 @@ class ShadowSocks(object):
         infoDict[u'到期时间'] = self.calcEndTime(infoDict[u'到期时间'])
         self.parseShadowInfo(infoDict)
         self.writeCache(infoDict)
+        return True
 
     def calcEndTime(self, nowtime):
         nowtime_struct = time.strptime(nowtime,'%Y-%m-%d %H:%M:%S')
