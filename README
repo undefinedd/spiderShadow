@@ -1,0 +1,7 @@
+从某网站上获取可用的ShadowSocks帐号信息，每个获取的可用到第二天凌晨一点，重新获取即可。
+
+依赖，python2.7
+requests
+urllib3
+bs4 
+termcolor
