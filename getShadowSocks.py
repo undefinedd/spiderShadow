@@ -173,12 +173,11 @@ class ShadowSocks(object):
         response = login_session.post(order_url, data=param_order, verify=False, headers=self._headers, proxies=self.debug_proxy)
         if response.status_code != 200:
             return False
-        #提交订单
+        #submit　order
         pay_url = 'https://www.ss-link.com/pay'
         response = login_session.post(pay_url, verify=False, headers=self._headers)
         response_json = json.loads(response.content)
         if response_json['result'] != 1:
-            #print '订单提交失败!'
             return False
         #match shadowsocks id
         info_url = 'https://www.ss-link.com/my/hostings'
@@ -189,14 +188,12 @@ class ShadowSocks(object):
         match_id = 'ID</td.*?(\d+)'
         match_ru = re.findall(match_id, response.content, re.S)
         if len(match_ru) == 0:
-            #print '获取shadowsocks ID出现错误!',response.content
             return False       
         shadow_id = match_ru[0];
         #开通服务
         create_url = 'https://www.ss-link.com/createHosting'
         response = login_session.post(create_url, data={'hostingId':shadow_id}, verify=False, headers=self._headers, proxies=self.debug_proxy)
         if response.status_code != 200:
-            #print 'create shadowsocks failure! reason_code:',response.status_code
             return False
         response_json = json.loads(response.content)
         if 'port' in response_json['msg']:
@@ -205,7 +202,6 @@ class ShadowSocks(object):
         info_url = 'https://www.ss-link.com/my/hostings'
         response = login_session.get(info_url, verify=False, headers=self._headers, proxies=self.debug_proxy)
         if response.status_code != 200:
-            #print 'get shadow info failure! reason_code:',response.status_code
             return False
         soup = BeautifulSoup(response.content)
         infoDict = {}
@@ -248,7 +244,6 @@ class ShadowSocks(object):
                 infoDict = eval(data)
                 cache_time = infoDict[u'到期时间']
                 endTime = time.mktime(time.strptime(cache_time,'%Y-%m-%d %H:%M:%S'))
-                #pdb.set_trace()
                 if time.time() > endTime:
                     success('缓存过期,更新缓存')
                 else:
