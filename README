@@ -5,3 +5,6 @@ requests
 urllib3
 bs4 
 termcolor
+
+
+运行中如果出现邮箱获取失败，多试几次就好了！
