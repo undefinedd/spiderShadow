@@ -1,5 +1,5 @@
 #coding:utf8
-import json,re,time,md5,random,pdb,urllib3,requests
+import json,re,time,md5,random,pdb,urllib3,requests,os,datetime
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from bs4 import BeautifulSoup
 from termcolor import colored
@@ -39,13 +39,29 @@ def alignment(str1, space, align = 'left'):
 
 class ShadowSocks(object):
     def __init__(self):
-        self.debug_proxy = {'http':'127.0.0.1:8080','https':'127.0.0.1:8080'}
+        self.debug_proxy = None#{'http':'127.0.0.1:8080','https':'127.0.0.1:8080'}
         self._getEmailTimes = 5;
         self._headers = {'User-Agent':'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:44.0) Gecko/20100101 Firefox/44.0'}
+        self._version = {'version':'1.0','info':''}
+
+    def update(self):
+        verify_file = 'https://raw.githubusercontent.com/undefinedd/spiderShadow/master/version'
+        new_file = 'https://raw.githubusercontent.com/undefinedd/spiderShadow/master/getShadowSocks.py'
+        response = requests.get(verify_file, verify=False)
+        version = eval(response.content.strip())
+        if version['version'] > self._version['version']:
+            error('发现新版本,'+version['info'])
+            response = requests.get(verify_file, verify=False)
+            newFile = eval(response.content.strip())
+            with open('getShadowSocks V'+version['version'], 'a') as f:
+                f.write(newFile);
+            success('更新完成,保存:./'+'getShadowSocks V'+version['version'])
+        
     
     def start(self):
+        self.update();
         self.makeParam();
-        if self.registerUser():
+        if self.readCache() and self.registerUser():
             emailObj = self.getEmail(self._email)
             if not emailObj:
                 return False;
@@ -55,9 +71,6 @@ class ShadowSocks(object):
                 if not login_session:
                     return
                 self.createShadow(login_session);
-        else:
-            print 'register failure'
-
             
 
 
@@ -187,24 +200,60 @@ class ShadowSocks(object):
         if response.status_code != 200:
             #print 'get shadow info failure! reason_code:',response.status_code
             return False
-        self.parseShadowInfo(response.content)
-
-    def parseShadowInfo(self, raw_html):
-        soup = BeautifulSoup(raw_html)
+        soup = BeautifulSoup(response.content)
         infoDict = {}
         for item in soup.find_all('tr'):
             infoDict[item.td.text] = item.text.replace(item.td.text,'').replace('\n','');
+            if item.td.text == u'二维码':
+                img_url = 'https://www.ss-link.com/%s' % item.img.get('src')
+                response = login_session.get(img_url, verify=False, headers=self._headers)
+                with open('img.png','wb') as f:
+                    f.write(response.content)
+                infoDict[item.td.text] = './img.png';
+        #处理时间
+        infoDict[u'到期时间'] = self.calcEndTime(infoDict[u'到期时间'])
+        self.parseShadowInfo(infoDict)
+        self.writeCache(infoDict)
+
+    def calcEndTime(self, nowtime):
+        nowtime_struct = time.strptime(nowtime,'%Y-%m-%d %H:%M:%S')
+        endTime = time.struct_time([nowtime_struct[0],nowtime_struct[1],nowtime_struct[2]+1,01,0,0,0,0,0]);
+        return time.strftime('%Y-%m-%d %H:%M:%S',endTime);
+
+    def parseShadowInfo(self, infoDict):
         print '-'*50
         for key in infoDict.keys():
             print '|'+alignment(key, 15, 'left')+alignment(infoDict[key], 33, 'left')+'|'
+        print '-'*50
+    
 
 
-
-
+    def writeCache(self, infoDict):
+        with open('cache_ShadowSocks', 'w') as f:
+            f.write(str(infoDict))
+            
+    def readCache(self):
+        try:
+            if os.path.isfile('cache_ShadowSocks'):
+                with open('cache_ShadowSocks', 'r') as f:
+                    data = f.read()
+                infoDict = eval(data)
+                cache_time = infoDict[u'到期时间']
+                endTime = time.mktime(time.strptime(cache_time,'%Y-%m-%d %H:%M:%S'))
+                #pdb.set_trace()
+                if time.time() > endTime:
+                    success('缓存过期,更新缓存')
+                else:
+                    success('缓存可用')
+                    self.parseShadowInfo(infoDict)
+                    return False
+            else:
+                process('无缓存,开始获取ShadowSocks')
+        except Exception,e:
+            error('读取缓存信息失败,重新获取ShadowSocks,'+str(e))
+        return True
+                
         
-        
-
-#email=asdfasdf%40qq.com&redirect=%2Fmy&password=7c03aeb8031097d35caf3416a1826139
             
            
         
