@@ -9,6 +9,8 @@ def error(string):
     """
     输出红色信息
     """
+    if type(string).__name__ != 'unicode':
+        string = unicode(string,'utf-8');
     print colored("[!]"+string, "red")
 
 
@@ -16,6 +18,8 @@ def success(string):
     """
     输出绿色信息
     """
+    if type(string).__name__ != 'unicode':
+        string = unicode(string,'utf-8');
     print colored("[+]"+string, "green")
 
 
@@ -23,6 +27,8 @@ def process(string):
     """
     输出蓝色信息
     """
+    if type(string).__name__ != 'unicode':
+        string = unicode(string,'utf-8');
     print colored("[*]"+string, "blue")
 
 def alignment(str1, space, align = 'left'):
