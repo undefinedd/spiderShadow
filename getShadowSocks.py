@@ -53,9 +53,9 @@ class ShadowSocks(object):
             error('发现新版本,'+version['info'])
             response = requests.get(verify_file, verify=False)
             newFile = eval(response.content.strip())
-            with open('getShadowSocks V'+version['version'], 'a') as f:
+            with open('getShadowSocksV'+version['version']+'.py', 'a') as f:
                 f.write(newFile);
-            success('更新完成,保存:./'+'getShadowSocks V'+version['version'])
+            success('更新完成,保存:./'+'getShadowSocks V'+version['version']+'.py')
         
     
     def start(self):
